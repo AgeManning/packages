@@ -1,5 +1,5 @@
-# Suricata 6 configuration
-menu "Suricata 6 Options"
+# Suricata configuration
+menu "Suricata Options"
 	menu "Engine Options"
 		config SURICATA_ENABLE_LUAJIT
 			bool "Enable Lua/LuaJIT Support"

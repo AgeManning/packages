@@ -1,42 +1,42 @@
 include $(TOPDIR)/rules.mk
 
 PKG_NAME := suricata
-PKG_VERSION := 6.0.4
+PKG_VERSION := 7.0.5
 PKG_RELEASE := 1
 
 PKG_SOURCE_PROTO := git
-PKG_SOURCE_DATE := 2021-11-18
-PKG_SOURCE_VERSION := e9c8767b905fcae53432076572bfbeaf639b202d
+PKG_SOURCE_DATE := 2024-05-01
+PKG_SOURCE_VERSION := c4cf7b09f043be5cdd6a38d7030290498b4dfa5b
 PKG_SOURCE_URL := https://github.com/OISF/suricata.git
-PKG_MIRROR_HASH := 0fc6a18c503022f304ae9c86ff8be0f52fe9b204c6dc78c69ef2039395d67d9c
+PKG_MIRROR_HASH := skip
 
-PKG_FIXUP := autoreconf
-PKG_FIXUP := patch-libtool
+#PKG_FIXUP := autoreconf
+#PKG_FIXUP := patch-libtool
 
 PKG_BUILD_PARALLEL := 1
 PKG_INSTALL := 1
-PKG_BUILD_DEPENDS := rust/host python3/host expat/host
+PKG_BUILD_DEPENDS := rust/host #python3/host expat/host
 
 include $(INCLUDE_DIR)/package.mk
-include ../../lang/rust/rust_environment.mk
+include ../../lang/rust/rust-values.mk
 
-define Package/suricata6/config
+define Package/suricata/config
     source "$(SOURCE)/Config.in"
 endef
 
-CONFIGURE_VARS += \
-  CARGO_HOME="$(CARGO_HOME)" \
-  ac_cv_path_CARGO="$(CARGO_HOME)/bin/cargo" \
-  ac_cv_path_RUSTC="$(CARGO_HOME)/bin/rustc" \
+#CONFIGURE_VARS += \
+#  CARGO_HOME="$(CARGO_HOME)" \
+#  ac_cv_path_CARGO="$(CARGO_HOME)/bin/cargo" \
+#  ac_cv_path_RUSTC="$(CARGO_HOME)/bin/rustc" \
 
-CONFIGURE_ARGS += \
-  --target=$(RUSTC_TARGET_ARCH) \
-  --host=$(RUSTC_TARGET_ARCH) \
-  --build=$(RUSTC_HOST_ARCH) \
-  --enable-shared \
-  --disable-gccmarch-native \
-  --with-gnu-ld \
-  --with-sysroot=$(STAGING_DIR_HOST)
+#CONFIGURE_ARGS += \
+#  --target=$(RUSTC_TARGET_ARCH) \
+#  --host=$(RUSTC_TARGET_ARCH) \
+#  --build=$(RUSTC_HOST_ARCH) \
+#  --enable-shared \
+#  --disable-gccmarch-native \
+#  --with-gnu-ld \
+#  --with-sysroot=$(STAGING_DIR_HOST)
 #	--enable-non-bundled-htp \
 #	--with-libhtp-includes=$(STAGING_DIR_HOSTPKG)/include \
 #	--with-libhtp-libraries=$(STAGING_DIR_HOSTPKG)/lib
@@ -76,7 +76,7 @@ ifeq ($(CONFIG_SURICATA_ENABLE_LIBMAGIC),n)
 CONFIGURE_ARGS += --disable-libmagic
 endif
 
-ifeq ($(CONFIG_SURICATA_ENABLE_DEBUG),y)
+ifeq ($(CONFIG_SURICATA_ENABLE_DEBUG),n)
 TARGET_CXXFLAGS += -ggdb3
 CONFIGURE_ARGS += --enable-debug
 endif
@@ -96,9 +96,9 @@ endif
 define Build/Prepare
 	$(call Build/Prepare/Default)
 
-	cd $(PKG_BUILD_DIR) && \
-	  git clone https://github.com/OISF/libhtp.git
-
+#	cd $(PKG_BUILD_DIR) && \
+#	  git clone https://github.com/OISF/libhtp.git
+#
 	[ -f $(CARGO_HOME)/bin/cbindgen ] || \
 	  $(CONFIGURE_VARS) cargo install --root=$(CARGO_HOME) cbindgen
 
@@ -106,11 +106,11 @@ define Build/Prepare
 endef
 
 define Build/Install
-	$(call Build/Install/Default,install)
-	$(call Build/Install/Default,install-conf)
+	$(call Build/Install/Default,install-full)
+#	$(call Build/Install/Default,install-conf)
 endef
 
-define Package/suricata6
+define Package/suricata
     SUBMENU:=Firewall
     SECTION:=net
     CATEGORY:=Network
@@ -128,17 +128,17 @@ define Package/suricata6
     MENU:=1
 endef
 
-define Package/suricata6/description
+define Package/suricata/description
 Suricata is an open source-based intrusion detection system (IDS), intrusion
 prevention system (IPS), and Network Monitoring System (NMS)
 endef
 
-define Package/suricata6/conffiles
+define Package/suricata/conffiles
 /etc/config/suricata
 /etc/suricata/
 endef
 
-define Package/suricata6/install
+define Package/suricata/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/suricata $(1)/usr/bin/suricata
 	$(INSTALL_BIN) $(PKG_INSTALL_DIR)/usr/bin/suricatactl $(1)/usr/bin/suricatactl
@@ -167,4 +167,4 @@ define Package/suricata6/install
 	$(INSTALL_CONF) ./files/etc/config/suricata $(1)/etc/config/suricata
 endef
 
-$(eval $(call BuildPackage,suricata6))
+$(eval $(call BuildPackage,suricata))
